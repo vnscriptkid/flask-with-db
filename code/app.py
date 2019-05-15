@@ -4,7 +4,6 @@ from flask_jwt import JWT, jwt_required
 from security import authenticate, identity
 from werkzeug.security import safe_str_cmp
 from user import UserRegister
-from item import ItemModel
 import sqlite3
 
 app = Flask(__name__)
@@ -21,47 +20,104 @@ class Item(Resource):
     
     @jwt_required()
     def get(self, name):
-        item = ItemModel.get_item_by_name(name)
-        return { 'item': { 'name': item.name, 'price': item.price } }, 200 if item else 404
+        connection = sqlite3.connect('data.db')
+        cursor = connection.cursor()
+
+        query = "SELECT * FROM items WHERE name=?"
+        result = cursor.execute(query, (name, ))
+        row = result.fetchone()
+        connection.close()
+        if row:
+            return { 'item': { 'name': row[0], 'price': row[1] } }, 200
+        return { 'msg': 'Item not found!' }, 404        
 
     @jwt_required()
     def post(self, name):
-        foundItem = next(filter(lambda item: item['name'] == name, items), None)
-        if (foundItem is not None):
-             return { 'msg': "Item with name '{}' already exists!".format(name)}, 400
-        data = request.get_json()
-        item = { 'name': name, 'price': data['price'] }
-        items.append(item)
-        return item, 201 
+        connection = sqlite3.connect('data.db')
+        cursor = connection.cursor()
 
-    @jwt_required()
+        data = request.get_json()
+        price = float(data['price'])
+
+        query = "SELECT * FROM items WHERE name=?"
+        result = cursor.execute(query, ( name, ))
+        row = result.fetchone()
+
+        if row:
+            return { 'msg': 'Item already exists!' }, 400
+
+        query_create = "INSERT INTO items (name, price) values (?, ?)"
+        cursor.execute(query_create, ( name, price ))
+ 
+        connection.commit()
+        connection.close()
+
+        return { 'success': True }, 201
+
+
+    # @jwt_required()
     def delete(self, name):
-        global items
-        items = list(filter(lambda x: x['name'] != name, items))
-        return { 'success': True }
-        # todo: case name does not exist, return false
+        connection = sqlite3.connect('data.db')
+        cursor = connection.cursor()
 
-    @jwt_required()
+        query = "SELECT * FROM items WHERE name=?"
+        result = cursor.execute(query, ( name, ))
+        row = result.fetchone()
+
+        if row is None:
+            return { 'msg': 'Item does not exist!' }, 400
+
+        query_delete = "DELETE FROM items WHERE name=?"
+        cursor.execute(query_delete, ( name, ))
+
+        connection.commit()
+        connection.close()
+
+        return { 'success': True }, 200
+        
+
+    # @jwt_required()
     def put(self, name):
-        # parser = reqparser.RequestParser()
-        # parser.add_argument('price',
-        #     type=float,
-        #     required=True,
-        #     help="You need to provide price"
-        # )
-        # data = parse.parse_args()
-        data = request.get_json()
+        connection = sqlite3.connect('data.db')
+        cursor = connection.cursor()
 
-        item = next(filter(lambda i: safe_str_cmp(i['name'], name), items), None)
-        if (item is None):
-            items.append(item)
-        else:
-            item.update(data)
-        return item
+        query = "SELECT * FROM items WHERE name=?"
+        result = cursor.execute(query, ( name, ))
+        row = result.fetchone()
+
+        if row is None:
+            return { 'msg': 'Item does not exist!' }, 400
+
+        data = request.get_json()
+        price = float(data['price'])
+
+        query_update = "UPDATE items SET price=? WHERE name=?"
+        cursor.execute(query_update, ( price, name ))
+
+        connection.commit()
+        connection.close()
+
+        return { 'success': True }, 200
 
 class ItemList(Resource):
     def get(self):
-        return { 'items': items }
+        connection = sqlite3.connect('data.db')
+        cursor = connection.cursor()
+
+        query = "SELECT * FROM items"
+        result = cursor.execute(query)
+        row = result.fetchone()
+        item_list = []
+
+        while (row is not None):
+            item_list.append({ 'name': row[0], 'price': row[1] })
+            row = result.fetchone()
+
+
+        connection.commit()
+        connection.close()
+
+        return item_list, 200
 
 @app.route('/')
 def home():

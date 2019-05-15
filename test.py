@@ -1,13 +1,13 @@
-import sqlite3
-from code import *
+# import sqlite3
+# from code import *
 
 # print(item.ItemModel.get_item_by_name('phone'))
-one_item = item.ItemModel.get_item_by_name('phone')
+# one_item = item.ItemModel.get_item_by_name('phone')
 # converted_one = {
 #     'name': one_item['name'],
 #     'price': one_item['price']
 # }
-print(one_item.name)
+# print(one_item.name)
 
 # connection = sqlite3.connect('data.db')
 
