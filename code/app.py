@@ -4,6 +4,7 @@ from flask_jwt import JWT, jwt_required
 from security import authenticate, identity
 from werkzeug.security import safe_str_cmp
 from user import UserRegister
+import sqlite3
 
 app = Flask(__name__)
 app.secret_key = 'keep it in ur pocket!'
