@@ -1,8 +1,17 @@
 import sqlite3
+from code import *
 
-connection = sqlite3.connect('data.db')
+# print(item.ItemModel.get_item_by_name('phone'))
+one_item = item.ItemModel.get_item_by_name('phone')
+# converted_one = {
+#     'name': one_item['name'],
+#     'price': one_item['price']
+# }
+print(one_item.name)
 
-cursor = connection.cursor()
+# connection = sqlite3.connect('data.db')
+
+# cursor = connection.cursor()
 
 # create_table = "CREATE TABLE users (id int, username text, password text)"
 # cursor.execute(create_table)
@@ -33,9 +42,9 @@ cursor = connection.cursor()
 # for row in cursor.execute(select_query):
 #     print(row)
 
-select_query = "SELECT * FROM items"
-for row in cursor.execute(select_query):
-    print(row)
+# select_query = "SELECT * FROM items"
+# for row in cursor.execute(select_query):
+#     print(row)
 
-connection.commit()
-connection.close()
+# connection.commit()
+# connection.close()

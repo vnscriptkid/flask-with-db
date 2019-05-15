@@ -4,6 +4,7 @@ from flask_jwt import JWT, jwt_required
 from security import authenticate, identity
 from werkzeug.security import safe_str_cmp
 from user import UserRegister
+from item import ItemModel
 import sqlite3
 
 app = Flask(__name__)
@@ -17,10 +18,11 @@ items = [
 ]
 
 class Item(Resource):
+    
     @jwt_required()
     def get(self, name):
-        item = next(filter(lambda item: item['name'] == name, items), None)
-        return { 'item': item }, 200 if item else 404
+        item = ItemModel.get_item_by_name(name)
+        return { 'item': { 'name': item.name, 'price': item.price } }, 200 if item else 404
 
     @jwt_required()
     def post(self, name):
