@@ -1,21 +1,28 @@
 import sqlite3
 from flask import request
 from flask_restful import Resource
+from werkzeug.security import generate_password_hash
 
 class UserRegister(Resource):
     def post(self):
+        data = request.get_json()
+        username = data['username']
+
+        if User.find_by_username(username) is not None:
+            return { 'msg': 'Username already exists!' }, 400
+
         connection = sqlite3.connect('data.db')
         cursor = connection.cursor()
 
-        data = request.get_json()
+        hash = generate_password_hash(data['password'])
 
         query = "INSERT INTO users VALUES (NULL, ?, ?)"
-        cursor.execute(query, (data['username'], data['password']))
+        cursor.execute(query, (username, hash))
 
         connection.commit()
         connection.close()
 
-        return { 'success': True }, 201
+        return { 'success': True }, 201 
         
 
 class User:

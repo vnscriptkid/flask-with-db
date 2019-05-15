@@ -1,4 +1,4 @@
-# import sqlite3
+import sqlite3
 # from code import *
 
 # print(item.ItemModel.get_item_by_name('phone'))
@@ -9,9 +9,8 @@
 # }
 # print(one_item.name)
 
-# connection = sqlite3.connect('data.db')
-
-# cursor = connection.cursor()
+connection = sqlite3.connect('data.db')
+cursor = connection.cursor()
 
 # create_table = "CREATE TABLE users (id int, username text, password text)"
 # cursor.execute(create_table)
@@ -38,13 +37,13 @@
 # ]
 # cursor.executemany(insert_item_table, items)
 
-# select_query = "SELECT * FROM users"
-# for row in cursor.execute(select_query):
-#     print(row)
+select_query = "SELECT * FROM users"
+for row in cursor.execute(select_query):
+    print(row)
 
 # select_query = "SELECT * FROM items"
 # for row in cursor.execute(select_query):
 #     print(row)
 
-# connection.commit()
-# connection.close()
+connection.commit()
+connection.close()
