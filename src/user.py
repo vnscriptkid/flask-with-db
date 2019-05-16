@@ -2,6 +2,7 @@ import sqlite3
 from flask import request
 from flask_restful import Resource
 from werkzeug.security import generate_password_hash
+from db import db
 
 class UserRegister(Resource):
     def post(self):
@@ -25,7 +26,13 @@ class UserRegister(Resource):
         return { 'success': True }, 201 
         
 
-class User:
+class User(db.Model):
+    __tablename__ = 'users'    
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(40))
+    password = db.Column(db.String(256))
+    
     def __init__(self, _id, username, password):
         self.id = _id
         self.username = username
