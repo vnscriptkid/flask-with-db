@@ -5,7 +5,8 @@ from security import authenticate, identity
 from werkzeug.security import safe_str_cmp
 from user import UserRegister
 from item import ItemModel
-import sqlite3  
+from sqlalchemy.orm import validates
+import sqlite3 
 
 app = Flask(__name__) 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
@@ -36,7 +37,11 @@ class Item(Resource):
             return { 'msg': 'Item name already exists' }, 400
 
         req_body = request.get_json()
-        price = float(req_body['price'])
+
+        if 'price' not in req_body or not req_body['price']:
+            return { 'msg': 'Must provide price' }, 400
+
+        price = req_body['price']
         item = ItemModel(name, price)
 
         try:

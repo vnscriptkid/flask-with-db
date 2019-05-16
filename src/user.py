@@ -7,6 +7,12 @@ from db import db
 class UserRegister(Resource):
     def post(self):
         data = request.get_json()
+        if ('username' not in data or not data['username']):
+            return { 'msg': 'Must provide username' }, 400
+
+        if ('password' not in data or not data['password']):
+            return { 'msg': 'Must provide password' }, 400
+
         username = data['username']
 
         if User.find_by_username(username) is not None:
