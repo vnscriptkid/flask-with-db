@@ -1,10 +1,10 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 from flask_restful import Resource, Api
 from flask_jwt import JWT, jwt_required
 from security import authenticate, identity
 from werkzeug.security import safe_str_cmp
-from user import UserRegister
-from item import ItemModel
+from models.user import UserRegister
+from models.item import ItemModel
 from sqlalchemy.orm import validates
 import sqlite3 
 
@@ -19,85 +19,85 @@ def create_tables():
     db.create_all()
  
 jwt = JWT(app, authenticate, identity) # /auth
-
-class Item(Resource):
-    
-    # @jwt_required()
-    def get(self, name): 
-        item = ItemModel.find_by_name(name)      
-        if item:
-            return item.json(), 200
-        return { 'msg': 'Item not found!' }, 404  
-
-
-    # @jwt_required()
-    def post(self, name):
-        item = ItemModel.find_by_name(name)
-        if item:
-            return { 'msg': 'Item name already exists' }, 400
-
-        req_body = request.get_json()
-
-        if 'price' not in req_body or not req_body['price']:
-            return { 'msg': 'Must provide price' }, 400
-
-        price = req_body['price']
-        item = ItemModel(name, price)
-
-        try:
-            item.save_to_db()
-        except:
-            return {'message': 'An error occurred when inserting new item'}, 500
         
-        return { 'success': True }, 201
-
-    # @jwt_required()
-    def delete(self, name):
-        item = ItemModel.find_by_name(name)
-
-        if item is None:
-            return { 'msg': 'Item does not exist' }, 400
-
-        try:
-            item.delete_from_db()
-        except:
-            return {'msg': 'An error occurred when deleting item'}, 500
-
-        return { 'success': True }, 200
-        
-
-    # @jwt_required()
-    def put(self, name):
-        item = ItemModel.find_by_name(name)
-
-        req_body = request.get_json()
-        price = float(req_body['price'])
-
-        if item is None:
-            item = ItemModel(name, price)
-        else:
-            item.price = price
-
-        try:
-            item.save_to_db() 
-        except:
-            return { 'msg': 'An error occurred when updating item' }, 500
-
-        return item.json(), 200
-
-class ItemList(Resource):
-    def get(self):
-        return { 'items': [item.json() for item in ItemModel.query.all()] }
-
 @app.route('/')
 def home():
-    return 'homepage'
-
-api.add_resource(Item, '/item/<string:name>')
+    return 'Home Page'
 
 api.add_resource(UserRegister, '/register')
 
-api.add_resource(ItemList, '/items')
+@app.route('/items', methods=['GET'])
+def get_item_list():
+    return jsonify({ 'items': [item.json() for item in ItemModel.query.all()] })
+
+@app.route('/items', methods=['POST'])
+@jwt_required()
+def create_new_item():
+    req_body = request.get_json()
+    if 'price' not in req_body or not req_body['price']:
+        return Response( '{ "msg": "Must provide price" }', status=400)
+    if 'name' not in req_body or not req_body['name']:
+        return Response( '{ "msg": "Must provide name" }', status=400 )
+
+    name = req_body['name']
+    price = req_body['price']
+
+    item = ItemModel.find_by_name(name)
+
+    if item:
+        return Response('{"msg": "Item name already exists"}', status=400)
+
+    item = ItemModel(name, price)
+
+    try:
+        item.save_to_db()
+    except:
+        return Response('{"msg": "An error occurred when inserting new item"}', status=500)
+    
+    return Response('{ "success": True }', status=201)
+
+@app.route('/items/<string:name>', methods=['GET'])
+def get_item_by_name(name):
+    item = ItemModel.find_by_name(name)      
+    if item:
+        return Response(str(item.json()), status=200)
+    return Response('{"msg": "Item not found"}', status=404 )
+
+@app.route('/items/<string:name>', methods=['PUT'])
+@jwt_required()
+def update_item(name):
+    req_body = request.get_json()
+    if 'price' not in req_body or not req_body['price']:
+        return Response( '{ "msg": "Must provide price" }', status=400)
+
+    price = req_body['price']
+    item = ItemModel.find_by_name(name)
+
+    if item is None:
+        item = ItemModel(name, price)
+    else:
+        item.price = price
+
+    try:
+        item.save_to_db() 
+    except:
+        return Response('{"msg": "An error occurred when updating item"}', status=500)
+    return Response(str(item.json()), status=200)
+
+@app.route('/items/<string:name>', methods=['DELETE'])
+@jwt_required()
+def delete_item(name):
+    item = ItemModel.find_by_name(name)
+
+    if item is None:
+        return Response('{ "msg": "Item does not exist" }', status=400)
+
+    try:
+        item.delete_from_db()
+    except:
+        return Response('{"msg": "An error occurred when updating item"}', status=500)
+
+    return Response('{ "success": True }', status=200)
 
 if __name__ == "__main__":
     from db import db
