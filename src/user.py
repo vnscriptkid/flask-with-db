@@ -12,26 +12,15 @@ class UserRegister(Resource):
         if User.find_by_username(username) is not None:
             return { 'msg': 'Username already exists!' }, 400
 
-        # connection = sqlite3.connect('data.db')
-        # cursor = connection.cursor()
-
         hash = generate_password_hash(data['password'])
-
-        # query = "INSERT INTO users VALUES (NULL, ?, ?)"
-        # cursor.execute(query, (username, hash))
 
         try:
             user = User(username, hash)
-            user.save()
+            user.save_to_db()
         except:
             return { 'msg': 'Error orcurred when creating new user' }, 500
 
         return { 'success': True }, 201
-
-        # connection.commit()
-        # connection.close()
-
-        
 
 class User(db.Model):
     __tablename__ = 'users'    
@@ -50,38 +39,8 @@ class User(db.Model):
 
     @classmethod
     def find_by_username(cls, username):
-        user = cls.query.filter_by(username = username).first()
-        if user:
-            return user.json()
-        return None
-        # connection = sqlite3.connect('data.db')
-        # cursor = connection.cursor()
-
-        # query = "SELECT * FROM users WHERE username=?"
-        # result = cursor.execute(query, (username, ))
-        # row = result.fetchone()
-        # if row:
-        #     user = cls(*row)
-        # else:
-        #     user = None
-        # connection.close()
-        # return user
+        return cls.query.filter_by(username = username).first()
 
     @classmethod
     def find_by_userid(cls, _id):
-        user = cls.query.filter_by(id = _id).first()
-        if user:
-            return user.json()
-        return None
-        # connection = sqlite3.connect('data.db')
-        # cursor = connection.cursor()
-
-        # query = "SELECT * FROM users WHERE id=?"
-        # result = cursor.execute(query, (_id, ))
-        # row = result.fetchone()
-        # if row:
-        #     user = cls(*row)
-        # else:
-        #     user = None
-        # connection.close()
-        # return user
+        return cls.query.filter_by(id = _id).first()

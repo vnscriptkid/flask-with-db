@@ -6,8 +6,6 @@ class ItemModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80))
     price = db.Column(db.Float(precision=2))
-    
-    # __table__ = db.Table('items', )S
 
     def __init__(self, name, price):
         self.name = name
