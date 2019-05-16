@@ -19,3 +19,18 @@ class ItemModel:
             item = None
         connection.close()
         return item
+
+    @classmethod
+    def create_new_item(cls, name, price):
+        connection = sqlite3.connect('data.db')
+        cursor = connection.cursor()
+
+        query = "INSERT INTO items (name, price) values (?, ?)"
+        result = cursor.execute(query, (name, price))
+        row = result.fetchone()
+        if row:
+            item = cls(*row)
+        else:
+            item = None
+        connection.close()
+        return item
