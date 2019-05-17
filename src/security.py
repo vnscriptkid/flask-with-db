@@ -1,6 +1,5 @@
-from werkzeug.security import safe_str_cmp
-from models.user import User
 from werkzeug.security import check_password_hash
+from models.user import User
 
 def authenticate(username, password):
     user = User.find_by_username(username)

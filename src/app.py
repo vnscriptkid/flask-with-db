@@ -1,12 +1,9 @@
 from flask import Flask, jsonify, request, Response
-from flask_restful import Resource, Api
+from flask_restful import Api
 from flask_jwt import JWT, jwt_required
 from security import authenticate, identity
-from werkzeug.security import safe_str_cmp
 from models.user import UserRegister
 from models.item import ItemModel
-from sqlalchemy.orm import validates
-import sqlite3 
 
 app = Flask(__name__) 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'

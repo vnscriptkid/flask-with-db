@@ -1,7 +1,6 @@
-import sqlite3
+from werkzeug.security import generate_password_hash
 from flask import request
 from flask_restful import Resource
-from werkzeug.security import generate_password_hash
 from db import db
 
 class UserRegister(Resource):
